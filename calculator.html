@@ -1,0 +1,303 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+    <title>Calculator</title>
+    <link rel="stylesheet" type="text/css" href="styleCalculator.css" />
+</head>
+<body>
+    
+    <table id="myTable" align="center" >
+    <tr align="center" height="10%" >
+    <td class="clear" onclick="del()" colspan="2">clear</td>
+    <td class="clear" onclick="back()" colspan="1">&#x232b;</td>
+    <td class="oper" onclick="toInput('/')">&#247</td>
+  </tr>
+  <tr align="center" height="10%">
+    <td class="number" onclick="toInput(7)" width="20%">7</td>
+    <td class="number" onclick="toInput(8)" width="20%">8</td>
+    <td class="number" onclick="toInput(9)" width="20%">9</td>
+    <td class="oper" onclick="toInput('*')" width="20%">&#215</td>
+  </tr>
+  <tr align="center" height="10%" >
+    <td class="number" onclick="toInput(4)">4</td>
+    <td class="number" onclick="toInput(5)">5</td>
+    <td class="number" onclick="toInput(6)">6</td>
+    <td class="oper" onclick="toInput('-')">&#8722</td>
+  </tr>
+  <tr align="center" height="10%">
+    <td class="number" onclick="toInput(1)">1</td>
+    <td class="number" onclick="toInput(2)">2</td>
+    <td class="number" onclick="toInput(3)">3</td>
+    <td class="oper" onclick="toInput('+')" rowspan="2">+</td>
+  </tr>
+  <tr align="center" height="10%">
+    <td class="oper" onclick="neg();">Neg</td>
+    <td class="number" onclick="toInput(0)">0</td>
+    <td class="oper" onclick="toInput('%');">%</td>
+  </tr>
+  <tr align="center" height="10%">
+    <td class="cal" onclick="Eval();" colspan="4">Calculate</td>
+  </tr>
+  
+</table>
+    
+    <!-- Insert your content here -->
+<script>
+    var tb=document.getElementById("myTable");
+    tb.insertRow(0).innerHTML ='<textarea disabled id="myArea" style = "resize: none;height:50%; width:380%; margin:60% 12% ; font: italic bold 22px Georgia, serif; border-radius: 10px"></textarea>';
+</script>
+
+<script>
+    var input = '0'; //create string input variable 
+    document.getElementById('myArea').value = input;
+    function toInput(x){ //Receive input from button
+        if (input == '0'){
+            input = '';
+        }
+        input = input + '' + x; //update input when user click
+        document.getElementById('myArea').value = input; //display input
+    }
+    
+    function del(){  //clear function to clear all input
+        input = '0';
+        document.getElementById('myArea').value = input;
+    }
+    function back(){ //function to delete last input
+        if (input.length > 1) {
+        input = input.slice(0,input.length-1);
+        } else {
+            input = '0';
+        }
+        document.getElementById('myArea').value = input;
+    }
+    
+    function neg(){ //function to insert negative sign ("-") before last number 
+        for ( var i = input.length; i>0;i--){ //count from last index of input
+            var index = i-1; 
+            if(input[index] == '+' || input[index] == '-' || input[index] == '*' || input[index] == '/' || input[index] == '%'){ //find index of last operator
+               input = input.slice(0, index+1) +'-'+input.slice(index+1); // insert ("-") before last number
+               i = -1; //set out of loop to stop insertion
+            }
+        }
+        document.getElementById('myArea').value = input;
+    }
+    var Stack = function() {
+    this.list = new Array(); // create an Array object (empty)
+    return this;
+    };
+    Stack.prototype = { // define methods for the Stack class
+    push: function( obj ) { this.list.push(obj); },
+    pop: function() { return this.list.pop(); },
+    clear: function() { this.list = new Array(); },
+    size: function() { return this.list.length; },
+    isEmpty: function() { return (this.list.length===0); }
+    };
+    
+    var infix =  [];
+    var postFixed = '';
+    var stack = new Stack();
+    
+    
+    function matching(str){
+        var regex = /[-]?[0-9]+|[+-\\*\\/\\(\\)%]/; // define regex pattern
+        var results = regex.exec(input); // perform regex matching (find first)
+        var tokens = [];
+        while ( results ) { // add the first match to the token list
+            tokens = tokens.concat( results[0] );
+            str = str.replace( results[0], ''); // remove token from string
+            results = regex.exec(str); // perform regex matching again
+            }
+            for( var i in tokens ) { // for each token in the array seperate operand and operator
+                if (tokens[i] == '+' || tokens[i] == '-' || tokens[i] == '*' || tokens[i] == '/' || tokens[i] == '%' ){
+                    infix.push(tokens[i]);
+                    } else {
+                        infix.push(parseInt(tokens[i]));
+                        }
+                    }
+                        console.log(infix);
+                        checkFormat(infix);
+            }
+
+    function checkFormat(x){ // index odd of infix must be operator
+        for( var k in x){
+            if( k%2 == 1){ //index odd of infix
+                if(parseInt(x[k])<0){ //if not operator
+                    var temp = x[k].toString();
+                    var sliced1 = temp.slice(0,1); // slice operator from operand
+                    var sliced2 = parseInt(temp.slice(1,temp.length)); // slice operator from operand
+                    infix.splice(k, 1,sliced1,sliced2); //from the same index will became tow indexs
+                } else {
+                }
+            } else { //index even of infix
+            }
+        }
+    }
+    
+    function ComparePrecedence(top,tokenI){
+        var check = true;
+        if (top == '+' && tokenI == '-') // + has same precedence -
+        {
+            check =  true;
+        }
+        if (top == '+' && tokenI == '*') // + has lower precedence than *
+        {
+            check  =  false;
+        }
+        if (top == '+' && tokenI == '/') // + has lower precedence than /
+        {
+            check  =  false;
+        }
+        if (top == '+' && tokenI == '%') // + has lower precedence than %
+        {
+            check  =  false;
+        }
+        ///////////////////////////////////////////////////////////////////
+        if (top == '-' && tokenI == '+') // - has same precedence +
+        {
+            check  =  true;
+        }
+        if (top == '-' && tokenI == '*') // - has lower precedence than *
+        {
+            check  =  false;
+        }
+        if (top == '-' && tokenI == '/') // - has lower precedence than /
+        {
+            check  =  false;
+        }
+        if (top == '-' && tokenI == '%') // - has lower precedence than %
+        {
+            check  =  false;
+        }
+        //////////////////////////////////////////////////////////////////
+        if (top == '*' && tokenI == '-') // * has higher precedence than -
+        {
+            check = true;
+        }   
+        if (top == '*' && tokenI == '+') // * has higher precedence than -
+        {
+            check = true;
+        }
+        if (top == '*'  && tokenI == '/') // * has same precedence /
+        {
+            check  =  true;
+        }
+        if (top == '*'  && tokenI == '%') // + has same precedence %
+        {
+            check  =  true;
+        }
+        //////////////////////////////////////////////////////////////
+        if (top == '/'  && tokenI == '+') // / has higher precedence than +
+        {
+            check  =  true;
+        }
+        if (top == '/'  && tokenI == '-') // / has higher precedence than -
+        {
+            check  =  true;
+        }
+        if (top == '/'  && tokenI == '*') // / has higher precedence than *
+        {
+            check  =  true;
+        }
+        if (top == '/'  && tokenI == '%') // / has higher precedence than %
+        {
+            check  =  true;
+        }
+        ////////////////////////////////////////////////////////////////
+        if (top == '%'  && tokenI == '+') // % has higher precedence than +
+        {
+            check  =  true;
+        }
+        if (top == '%'  && tokenI == '-') // % has higher precedence than -
+        {
+            check  =  true;
+        }
+        if (top == '%'  && tokenI == '*') // % has higher precedence than *
+        {
+            check  =  true;
+        }
+        if (top == '%'  && tokenI == '/') // % has higher precedence than /
+        {
+            check  =  true;
+        }
+        ///////////////////////////////////////////////////////////////////
+        return check;
+    }
+    
+    
+    function IntoPost(inFix){ //converse infix from to Postfix
+    for( var i in inFix ) { // for each index in the array inFix
+        if (Number.isInteger(inFix[i])){ //if index is integer
+            if (!(inFix[i-1] >= '0' && inFix[i-1] <= '9') ){
+                postFixed = postFixed+ ' ';
+            }
+            postFixed = postFixed +  ''+ inFix[i]; // push that integer to postFixed
+            } else { // if index is operator
+            if (inFix[i] == '+' || inFix[i] == '-' || inFix[i] == '*' || inFix[i] =='/' || inFix[i] == '%'){                
+                if (stack.isEmpty()){ // check stack is  empty?
+                    stack.push(inFix[i]); //if empty then push operator to stack
+                } else {
+                while (!stack.isEmpty()){ // if stack is not empty check precedence of top of stack and that operator
+                    var topOfstack = stack.pop(); // pop to compare
+                    if(ComparePrecedence(topOfstack,inFix[i])){ // if top of stack has higher precedence 
+                        postFixed = postFixed + ' '+topOfstack; // then push to postFixed output
+                    } else {
+                        stack.push(topOfstack) ; //if not push back to stack
+                        break;
+                        }
+                        }
+                        stack.push(inFix[i]); //push that operator to stack
+                }
+            }
+        }
+    }
+    while (!stack.isEmpty()){ //check if have any input in stack
+        postFixed = postFixed + ' '+stack.pop(); //then push to postFixed output
+        }
+    }
+    
+    function Eval(){ //Evaluate function
+    matching(input); // get Infix from string
+    IntoPost(infix); // get Postfix(array) from infix
+    
+    var stackEvar = new Stack(); // create a Stack object
+    var items = postFixed.split(' '); // string -> array
+    var op1, op2, result;
+    for( var i in items){ 
+        token = items[i];
+        if ( token == '*' ) { // if token is * operator
+            op2 = stackEvar.pop(); op1 = stackEvar.pop(); // pop operand  to calculate
+            result = parseInt(op1) * parseInt(op2); // calculation of *
+            stackEvar.push( result );
+            } else if ( token == '+' ) { // if token is + operator
+                op2 = stackEvar.pop(); op1 = stackEvar.pop();
+                result = parseInt(op1) + parseInt(op2); // calculation of +
+                stackEvar.push( result );
+            } else if ( token == '-' ) {// if token is - operator
+                op2 = stackEvar.pop(); op1 = stackEvar.pop();
+                result = parseInt(op1) - parseInt(op2); // calculation of -
+                stackEvar.push( result );
+            } else if ( token == '/' ) {// if token is / operator
+                op2 = stackEvar.pop(); op1 = stackEvar.pop();
+                result = parseInt(op1) / parseInt(op2); // calculation of /
+                stackEvar.push( result );
+            } else if ( token == '%' ) {// if token is % operator 
+                op2 = stackEvar.pop(); op1 = stackEvar.pop();
+                result = parseInt(op1) % parseInt(op2); // calculation of %
+                stackEvar.push( result );
+            } else { // if token is operand 
+                stackEvar.push( token );
+            }
+    }
+    var lastResult = stackEvar.pop(); //keep last result in variable
+    if (isNaN(lastResult)){ //if NumberFormatException(Not a Number)
+        lastResult = 'Error'; //Display Error
+    }
+    document.getElementById('myArea').value = "Result: " + lastResult;
+    input  = ''+lastResult; //keep last result for next input
+    infix  = []; // Restore value of infix
+    postFixed = ''; // Restore value of postfix
+    }  
+</script>
+</body>
+</html>
